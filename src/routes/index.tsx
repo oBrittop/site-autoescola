@@ -14,7 +14,7 @@ import {
   X,
   ChevronRight,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { type CSSProperties, useState, useEffect } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -44,6 +44,8 @@ export const Route = createFileRoute("/")({
 const WHATSAPP_LINK =
   "https://wa.me/5561999810011?text=Ol%C3%A1%2C%20vim%20pelo%20site%20da%20Autoescola%20Patr%C3%ADcia%20e%20gostaria%20de%20mais%20informa%C3%A7%C3%B5es.";
 
+const BRAND_LOGO_SRC = "/autoescola-patricia-logo.jpg";
+
 const NAV_LINKS = [
   { label: "Início", href: "#inicio" },
   { label: "Sobre", href: "#sobre" },
@@ -52,8 +54,45 @@ const NAV_LINKS = [
 ];
 
 function Index() {
+  const [pointer, setPointer] = useState({ x: 50, y: 35 });
+  const [pageScrollProgress, setPageScrollProgress] = useState(0);
+
+  useEffect(() => {
+    const handlePointerMove = (event: PointerEvent) => {
+      setPointer({
+        x: (event.clientX / window.innerWidth) * 100,
+        y: (event.clientY / window.innerHeight) * 100,
+      });
+    };
+
+    window.addEventListener("pointermove", handlePointerMove, { passive: true });
+    return () => window.removeEventListener("pointermove", handlePointerMove);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollableHeight = Math.max(
+        document.documentElement.scrollHeight - window.innerHeight,
+        1,
+      );
+
+      setPageScrollProgress(Math.min(window.scrollY / scrollableHeight, 1));
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const pageStyle = {
+    "--pointer-x": `${pointer.x}%`,
+    "--pointer-y": `${pointer.y}%`,
+    "--page-scroll": pageScrollProgress,
+  } as CSSProperties;
+
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="living-site min-h-screen bg-background text-foreground" style={pageStyle}>
+      <div className="site-ambient" aria-hidden="true" />
       <Header />
       <main>
         <HeroSection />
@@ -70,26 +109,37 @@ function Index() {
 function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 16);
+    let lastScrollY = window.scrollY;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      setIsScrolled(currentScrollY > 16);
+      setIsHidden(currentScrollY > lastScrollY && currentScrollY > 90);
+      lastScrollY = currentScrollY;
+    };
+
+    handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? "bg-background/95 shadow-lg backdrop-blur-sm"
-          : "bg-background"
-      }`}
+      className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
+        isHidden && !isOpen ? "-translate-y-full" : "translate-y-0"
+      } ${isScrolled ? "bg-background/95 shadow-lg backdrop-blur-sm" : "bg-background"}`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         <a href="#inicio" className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Car className="h-5 w-5" aria-hidden="true" />
-          </span>
+          <img
+            src={BRAND_LOGO_SRC}
+            alt="Autoescola Patrícia"
+            className="h-11 w-11 rounded-lg object-cover shadow-sm"
+          />
           <span className="text-lg font-bold tracking-tight text-foreground">
             Autoescola <span className="text-brand-yellow-dark">Patrícia</span>
           </span>
@@ -162,64 +212,106 @@ function Header() {
 }
 
 function HeroSection() {
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const max = Math.max(window.innerHeight, 1);
+      setScrollProgress(Math.min(window.scrollY / max, 1));
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const heroStyle = {
+    "--hero-progress": scrollProgress,
+  } as CSSProperties;
+
   return (
     <section
       id="inicio"
-      className="relative overflow-hidden bg-brand-black pt-28 pb-20 md:pt-36 md:pb-28"
+      style={heroStyle}
+      className="hero-stage relative overflow-hidden bg-[oklch(0.98_0.02_96)] pt-28 pb-16 md:pt-36 md:pb-24"
     >
-      {/* Decorative grid */}
-      <div className="absolute inset-0 pattern-grid opacity-10" aria-hidden="true" />
-      <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-primary/20 blur-3xl" aria-hidden="true" />
-      <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-primary/10 blur-3xl" aria-hidden="true" />
+      <div className="scroll-meter" aria-hidden="true">
+        <span />
+      </div>
+      <div className="absolute inset-0 hero-road-lines" aria-hidden="true" />
+      <div
+        className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background to-transparent"
+        aria-hidden="true"
+      />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
-            <Star className="h-4 w-4 fill-primary text-primary" aria-hidden="true" />
-            Avaliação 4,8 no Google — mais de 100 avaliações
-          </span>
+        <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.82fr]">
+          <div className="scroll-reveal">
+            <span className="inline-flex items-center gap-2 rounded-full border border-brand-black/10 bg-white/70 px-4 py-1.5 text-sm font-semibold text-brand-black shadow-sm backdrop-blur">
+              <Star className="h-4 w-4 fill-primary text-primary" aria-hidden="true" />
+              Avaliação 4,8 no Google - mais de 100 avaliações
+            </span>
 
-          <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-white text-balance sm:text-5xl md:text-6xl">
-            Sua habilitação com quem tem{" "}
-            <span className="text-primary">+24 anos</span> de tradição.
-          </h1>
+            <h1 className="mt-6 text-5xl font-extrabold tracking-tight text-brand-black text-balance sm:text-6xl md:text-7xl">
+              Sua habilitação com quem tem <span className="text-brand-yellow-dark">+24 anos</span>{" "}
+              de tradição.
+            </h1>
 
-          <p className="mt-6 text-lg text-white/80 text-balance md:text-xl">
-            Líder em aprovação no Riacho Fundo I/DF. Aulas para Categorias{" "}
-            <span className="font-semibold text-primary">A (Moto)</span> e{" "}
-            <span className="font-semibold text-primary">AB (Carro e Moto)</span>
-            .
-          </p>
+            <p className="mt-6 max-w-2xl text-lg text-muted-foreground text-balance md:text-xl">
+              Líder em aprovação no Riacho Fundo I/DF. Aulas para Categorias{" "}
+              <span className="font-semibold text-foreground">A (Moto)</span> e{" "}
+              <span className="font-semibold text-foreground">AB (Carro e Moto)</span>.
+            </p>
 
-          <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <a
-              href={WHATSAPP_LINK}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex w-full items-center justify-center gap-3 rounded-full bg-primary px-8 py-4 text-lg font-bold text-primary-foreground shadow-xl transition-all hover:bg-brand-yellow-dark hover:shadow-2xl sm:w-auto"
-            >
-              <WhatsAppIcon className="h-6 w-6" aria-hidden="true" />
-              Falar com Atendente no WhatsApp
-              <ChevronRight className="h-5 w-5 transition-transform group-hover:translate-x-1" aria-hidden="true" />
-            </a>
-            <a
-              href="#sobre"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-8 py-4 text-base font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/10 sm:w-auto"
-            >
-              Conhecer nossos diferenciais
-            </a>
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+              <a
+                href={WHATSAPP_LINK}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex w-full items-center justify-center gap-3 rounded-full bg-primary px-8 py-4 text-lg font-bold text-primary-foreground shadow-xl transition-all hover:bg-brand-yellow-dark hover:shadow-2xl sm:w-auto"
+              >
+                <WhatsAppIcon className="h-6 w-6" aria-hidden="true" />
+                Falar com Atendente no WhatsApp
+                <ChevronRight
+                  className="h-5 w-5 transition-transform group-hover:translate-x-1"
+                  aria-hidden="true"
+                />
+              </a>
+              <a
+                href="#sobre"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-brand-black/15 bg-white/70 px-8 py-4 text-base font-semibold text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-white sm:w-auto"
+              >
+                Conhecer nossos diferenciais
+              </a>
+            </div>
+
+            <div className="mt-12 flex flex-wrap gap-4 text-sm font-medium text-muted-foreground">
+              <span className="inline-flex items-center gap-2">
+                <Bike className="h-5 w-5 text-brand-yellow-dark" aria-hidden="true" /> Categoria A
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <Car className="h-5 w-5 text-brand-yellow-dark" aria-hidden="true" /> Categoria AB
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-brand-yellow-dark" aria-hidden="true" /> Riacho
+                Fundo I/DF
+              </span>
+            </div>
           </div>
 
-          <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-white/70">
-            <span className="inline-flex items-center gap-2">
-              <Bike className="h-5 w-5 text-primary" aria-hidden="true" /> Categoria A
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <Car className="h-5 w-5 text-primary" aria-hidden="true" /> Categoria AB
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-primary" aria-hidden="true" /> Riacho Fundo I/DF
-            </span>
+          <div
+            className="hero-photo-panel brand-logo-panel scroll-reveal"
+            style={{ animationDelay: "120ms" }}
+          >
+            <img src={BRAND_LOGO_SRC} alt="Logo da Autoescola Patrícia" />
+            <div className="hero-photo-card">
+              <span>Autoescola Patrícia</span>
+              <strong>Centro de formação de condutores AB</strong>
+            </div>
+            <div className="hero-photo-badge">
+              <span>24+</span>
+              anos
+            </div>
           </div>
         </div>
       </div>
@@ -238,20 +330,17 @@ function AboutSection() {
     {
       icon: Users,
       title: "Profissionais eficientes e pacientes",
-      description:
-        "Instrutores qualificados que priorizam sua segurança e evolução em cada aula.",
+      description: "Instrutores qualificados que priorizam sua segurança e evolução em cada aula.",
     },
     {
       icon: Shield,
       title: "Veículos seguros",
-      description:
-        "Frota revisada e equipada para que você aprenda com tranquilidade e confiança.",
+      description: "Frota revisada e equipada para que você aprenda com tranquilidade e confiança.",
     },
     {
       icon: Star,
       title: "Líder em Aprovação",
-      description:
-        "Alta taxa de aprovação dos nossos alunos nos exames do DETRAN.",
+      description: "Alta taxa de aprovação dos nossos alunos nos exames do DETRAN.",
     },
   ];
 
@@ -274,7 +363,7 @@ function AboutSection() {
           {DIFFERENTIALS.map((item) => (
             <div
               key={item.title}
-              className="group relative rounded-2xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
+              className="alive-card scroll-reveal group relative rounded-2xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
             >
               <div className="mb-4 inline-flex rounded-xl bg-primary/10 p-3 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
                 <item.icon className="h-6 w-6" aria-hidden="true" />
@@ -285,7 +374,7 @@ function AboutSection() {
           ))}
         </div>
 
-        <div className="mt-16 flex flex-col items-center justify-center gap-4 rounded-3xl bg-brand-black p-8 text-center text-white md:flex-row md:justify-between md:p-12 md:text-left">
+        <div className="scroll-reveal mt-16 flex flex-col items-center justify-center gap-4 rounded-3xl bg-brand-black p-8 text-center text-white md:flex-row md:justify-between md:p-12 md:text-left">
           <div>
             <p className="text-sm font-medium uppercase tracking-wider text-primary">
               Avaliação dos nossos alunos
@@ -342,15 +431,12 @@ function TestimonialsSection() {
           {TESTIMONIALS.map((testimonial, index) => (
             <article
               key={index}
-              className="relative rounded-2xl border border-border bg-background p-6 shadow-sm"
+              className="alive-card scroll-reveal relative rounded-2xl border border-border bg-background p-6 shadow-sm"
+              style={{ animationDelay: `${index * 90}ms` }}
             >
               <div className="mb-4 flex gap-1" aria-label="Avaliação 5 estrelas">
                 {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className="h-5 w-5 fill-primary text-primary"
-                    aria-hidden="true"
-                  />
+                  <Star key={i} className="h-5 w-5 fill-primary text-primary" aria-hidden="true" />
                 ))}
               </div>
               <blockquote className="text-foreground">
@@ -375,7 +461,7 @@ function ContactSection() {
     <section id="contato" className="bg-background py-20 md:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-12 lg:grid-cols-2">
-          <div>
+          <div className="scroll-reveal">
             <span className="text-sm font-semibold uppercase tracking-wider text-primary">
               Entre em contato
             </span>
@@ -399,7 +485,7 @@ function ContactSection() {
           </div>
 
           <div className="grid gap-6">
-            <div className="flex items-start gap-4 rounded-2xl border border-border bg-card p-5">
+            <div className="alive-card flex items-start gap-4 rounded-2xl border border-border bg-card p-5">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                 <MapPin className="h-5 w-5" aria-hidden="true" />
               </div>
@@ -411,7 +497,7 @@ function ContactSection() {
               </div>
             </div>
 
-            <div className="flex items-start gap-4 rounded-2xl border border-border bg-card p-5">
+            <div className="alive-card flex items-start gap-4 rounded-2xl border border-border bg-card p-5">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                 <Phone className="h-5 w-5" aria-hidden="true" />
               </div>
@@ -421,7 +507,7 @@ function ContactSection() {
               </div>
             </div>
 
-            <div className="flex items-start gap-4 rounded-2xl border border-border bg-card p-5">
+            <div className="alive-card flex items-start gap-4 rounded-2xl border border-border bg-card p-5">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                 <Clock className="h-5 w-5" aria-hidden="true" />
               </div>
@@ -446,9 +532,11 @@ function Footer() {
         <div className="grid gap-10 md:grid-cols-3">
           <div>
             <div className="flex items-center gap-2">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <Car className="h-5 w-5" aria-hidden="true" />
-              </span>
+              <img
+                src={BRAND_LOGO_SRC}
+                alt="Autoescola Patrícia"
+                className="h-11 w-11 rounded-lg object-cover"
+              />
               <span className="text-lg font-bold">
                 Autoescola <span className="text-primary">Patrícia</span>
               </span>
@@ -475,9 +563,7 @@ function Footer() {
             <h3 className="font-semibold text-white">Contato</h3>
             <ul className="mt-4 space-y-2 text-sm text-white/70">
               <li>(61) 99981-0011</li>
-              <li>
-                Riacho Fundo QS 6 conj 01 lote 37 — Riacho Fundo, Brasília - DF, 71820-601
-              </li>
+              <li>Riacho Fundo QS 6 conj 01 lote 37 — Riacho Fundo, Brasília - DF, 71820-601</li>
               <li>Seg a Sex: 08:00 às 18:00 | Sábado: 08:00 às 12:00</li>
             </ul>
             <a
