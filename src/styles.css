@@ -181,9 +181,8 @@
 /* Foto principal do hero */
 .hero-photo-img {
   display: block;
-  width: 115%;
-  max-width: none;
-  max-height: clamp(320px, 65vw, 700px);
+  width: 3000px;
+  max-height: clamp(280px, 55vw, 580px);
   filter: drop-shadow(0 24px 48px rgb(0 0 0 / 0.15));
   transform: translate(20px,-38px);
 }
