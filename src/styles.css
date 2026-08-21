@@ -143,28 +143,18 @@
   z-index: 1;
 }
 
-/* site-ambient: cobre o viewport inteiro como pano de fundo animado */
+/* site-ambient: fundo branco puro — qualquer tom quente criava linha amarela */
 .site-ambient {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background:
-    linear-gradient(rgb(255 255 255 / 0.86), rgb(255 255 255 / 0.94)),
-    url("https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=1800&q=80");
-  background-attachment: fixed;
-  background-position:
-    center,
-    center calc(var(--page-scroll, 0) * -160px);
-  background-size: auto, cover;
-  opacity: 0.82;
-  transition: background-position 140ms linear;
+  background: #ffffff;
 }
 
-/* Seções que ficam sobre o ambient recebem glassmorphism */
+/* Seções abaixo do hero: fundo branco sólido */
 .living-site main > section:not(.hero-stage) {
-  background-color: rgb(255 255 255 / 0.88);
-  backdrop-filter: blur(12px);
+  background-color: #ffffff;
 }
 
 .living-site main > #depoimentos {
@@ -181,16 +171,16 @@
 /* Foto principal do hero */
 .hero-photo-img {
   display: block;
-  width: 3000px;
   max-height: clamp(280px, 55vw, 580px);
   filter: drop-shadow(0 24px 48px rgb(0 0 0 / 0.15));
-  transform: translate(20px,-38px);
+  transform: translate(90px, -90px);
 }
 
 @media (max-width: 1023px) {
   .hero-photo-img {
     max-height: clamp(200px, 70vw, 340px);
     margin: 0 auto;
+    transform: none;
   }
 }
 
@@ -468,5 +458,33 @@ button:hover {
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* ─── WhatsApp CTA — pulso de brilho ────────────────────────────────────────── */
+
+.wpp-pulse {
+  /* Camada 1: anel que expande e some (verde WPP) */
+  animation: wpp-ring 2s ease-out infinite;
+}
+
+@keyframes wpp-ring {
+  0% {
+    box-shadow:
+      0 0 0 0   rgba(37, 211, 102, 0.75),
+      0 0 0 0   rgba(37, 211, 102, 0.45),
+      0 4px 18px rgba(0, 0, 0, 0.35);
+  }
+  60% {
+    box-shadow:
+      0 0 0 10px rgba(37, 211, 102, 0),
+      0 0 0 20px rgba(37, 211, 102, 0),
+      0 4px 18px rgba(0, 0, 0, 0.35);
+  }
+  100% {
+    box-shadow:
+      0 0 0 0   rgba(37, 211, 102, 0),
+      0 0 0 0   rgba(37, 211, 102, 0),
+      0 4px 18px rgba(0, 0, 0, 0.35);
   }
 }
