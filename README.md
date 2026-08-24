@@ -22,3 +22,5 @@ npm run dev
 - TypeScript
 - React
 - Tailwind CSS
+
+by = Gustavo Brito 
